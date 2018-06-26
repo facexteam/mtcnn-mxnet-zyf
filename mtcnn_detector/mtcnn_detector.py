@@ -333,7 +333,7 @@ class MtcnnDetector(object):
                  threshold=[0.6, 0.7, 0.8],
                  factor=0.709,
                  num_worker=1,
-                 accurate_landmark=False
+                 accurate_landmark=True
                  ):
         """
             Initialize the detector
@@ -342,6 +342,9 @@ class MtcnnDetector(object):
             ----------
                 model_folder : string
                     path for the models
+                gpu_id: int
+                    >=0 gpu id; 
+                    <0 cpu mode
                 minsize : float number
                     minimal face to detect
                 threshold : float number
@@ -453,7 +456,10 @@ class MtcnnDetector(object):
     def detect_first_stage_warpper(self, args):
         return self.detect_first_stage(*args)
 
-    def detect_face(self, img, minsize=None):
+    def detect_face(self, img, minsize=20,
+                    threshold=[],
+                    factor=0.709,
+                    fastresize=False):
         """
             detect face over img
         Parameters:
@@ -470,6 +476,12 @@ class MtcnnDetector(object):
 
         if not minsize or minsize < MIN_DET_SIZE:
             minsize = self.minsize
+
+        if not threshold:
+            threshold = self.threshold
+
+        if factor is None or factor < 0:
+            factor = self.factor
 
         if img is None:
             return [], []
@@ -503,7 +515,7 @@ class MtcnnDetector(object):
         if self.num_worker < 2:
             for scale in scales:
                 return_boxes = self.detect_first_stage(
-                    img, self.PNets[0], scale, self.threshold[0])
+                    img, self.PNets[0], scale, threshold[0])
                 if return_boxes is not None:
                     total_boxes.append(return_boxes)
         else:
@@ -511,7 +523,7 @@ class MtcnnDetector(object):
             total_boxes = []
             for batch in sliced_index:
                 local_boxes = self.Pool.map(self.detect_first_stage_warpper,
-                                            izip(repeat(img), self.PNets[:len(batch)], [scales[i] for i in batch], repeat(self.threshold[0])))
+                                            izip(repeat(img), self.PNets[:len(batch)], [scales[i] for i in batch], repeat(threshold[0])))
                 total_boxes.extend(local_boxes)
 
         # remove the Nones
@@ -569,7 +581,7 @@ class MtcnnDetector(object):
         output = self.RNet.predict(input_buf)
 
         # filter the total_boxes with threshold
-        passed = np.where(output[1][:, 1] > self.threshold[1])
+        passed = np.where(output[1][:, 1] > threshold[1])
         total_boxes = total_boxes[passed]
 
         if total_boxes.size == 0:
@@ -610,7 +622,7 @@ class MtcnnDetector(object):
         output = self.ONet.predict(input_buf)
 
         # filter the total_boxes with threshold
-        passed = np.where(output[2][:, 1] > self.threshold[2])
+        passed = np.where(output[2][:, 1] > threshold[2])
         total_boxes = total_boxes[passed]
 
         if total_boxes.size == 0:
