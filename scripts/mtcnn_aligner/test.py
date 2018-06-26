@@ -5,13 +5,6 @@ Created on Thu Jul 06 07:35:55 2017
 @author: zhaoy
 """
 
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jul 06 06:33:36 2017
-
-@author: zhaoy
-"""
-import sys
 import os
 import os.path as osp
 
@@ -86,8 +79,9 @@ def main(img_path, face_rects, save_dir=None, save_img=True, show_img=True):
     json.dump(results, fp_rlt, indent=4)
     fp_rlt.close()
 
+
 if __name__ == '__main__':
-    img_path = '../test_imgs/Marilyn_Monroe_0002.jpg'
+    img_path = '../../test_imgs/Marilyn_Monroe_0002.jpg'
     face_rects = [
         [
             [

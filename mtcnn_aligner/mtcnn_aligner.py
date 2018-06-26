@@ -429,10 +429,10 @@ class MtcnnAligner(object):
             input_buf[i, :, :, :] = adjust_input(cv2.resize(tmp, (24, 24)))
 
         output = self.RNet.predict(input_buf)
-        print("RNet output.len: ", len(output))
-        for i, it in enumerate(output):
-            print("output[{}].shape: {}\n".format(i, it.shape))
-        print("RNet output: \n", output)
+        # print("RNet output.len: ", len(output))
+        # for i, it in enumerate(output):
+        #     print("output[{}].shape: {}\n".format(i, it.shape))
+        # print("RNet output: \n", output)
 
         # filter the total_boxes with threshold
         # passed = np.where(output[1][:, 1] > threshold[1])
@@ -445,13 +445,13 @@ class MtcnnAligner(object):
         total_boxes[:, 4] = output[1][:, 1].reshape((-1,))
         reg = output[0]
 
-        print("total_boxes before bbox_reg: \n", total_boxes)
+        # print("total_boxes before bbox_reg: \n", total_boxes)
         total_boxes = bbox_reg(total_boxes, reg)
-        print("total_boxes after bbox_reg: \n", total_boxes)
+        # print("total_boxes after bbox_reg: \n", total_boxes)
 
         total_boxes = convert_to_square(total_boxes)
         total_boxes[:, 0:4] = np.round(total_boxes[:, 0:4])
-        print("total_boxes after convert_to_square: \n", total_boxes)
+        # print("total_boxes after convert_to_square: \n", total_boxes)
 
         #        t2 = time.clock()
         # print("Second stage cost %f seconds, using %d processes, processed %d
@@ -476,10 +476,10 @@ class MtcnnAligner(object):
             input_buf[i, :, :, :] = adjust_input(cv2.resize(tmp, (48, 48)))
 
         output = self.ONet.predict(input_buf)
-        print("ONet output.len: ", len(output))
-        for i, it in enumerate(output):
-            print("output[{}].shape: {}\n".format(i, it.shape))
-        print("ONet output: \n", output)
+        # print("ONet output.len: ", len(output))
+        # for i, it in enumerate(output):
+        #     print("output[{}].shape: {}\n".format(i, it.shape))
+        # print("ONet output: \n", output)
 
         # filter the total_boxes with threshold
         # passed = np.where(output[2][:, 1] > threshold[2])
@@ -545,10 +545,10 @@ class MtcnnAligner(object):
                           :] = adjust_input(cv2.resize(tmpim, (24, 24)))
 
         output = self.LNet.predict(input_buf)
-        print("LNet output.len: ", len(output))
-        for i, it in enumerate(output):
-            print("output[{}].shape: {}\n".format(i, it.shape))
-        print("LNet output: \n", output)
+        # print("LNet output.len: ", len(output))
+        # for i, it in enumerate(output):
+        #     print("output[{}].shape: {}\n".format(i, it.shape))
+        # print("LNet output: \n", output)
 
         pointx = np.zeros((num_box, 5))
         pointy = np.zeros((num_box, 5))
