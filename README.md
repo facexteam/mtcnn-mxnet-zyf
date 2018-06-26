@@ -3,9 +3,10 @@
 Author: zhaoyafei0210@gmail.com (https://github.com/walkoncross)
 
 This repo is based on repo: https://github.com/pangyupo/mxnet_mtcnn_face_detection.
-In this repo we add the 4th stage: LNet, so now it's the same as MTCNN-v2.
 
-And also 3 wrappers of MTCNN-v2 are included for easy usage.
+MtcnnDetector in mtcnn_detetctor.py is an class wrapper for the implementation of MTCNN-v2 which has 4 stages: PNet, RNet, ONet and LNet.
+
+Except MtcnnDetector, another 2 class wrappers: MtcnnAligner (in mtcnn_aligner.py) and FaceAligner (in face_aligner.py) are provided for easy usage.
 
 ## Contents
 ```
