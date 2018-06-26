@@ -80,16 +80,16 @@ def generate_bboxes(scores_map, reg, scale, threshold):
 
     reg = np.array([dx1, dy1, dx2, dy2])
     score = scores_map[t_index[0], t_index[1]]
-    boundingbox = np.vstack([np.round((stride * t_index[1] + 1) / scale),
-                             np.round((stride * t_index[0] + 1) / scale),
-                             np.round(
-                                 (stride * t_index[1] + 1 + cellsize) / scale),
-                             np.round(
-                                 (stride * t_index[0] + 1 + cellsize) / scale),
-                             score,
-                             reg])
+    bbox = np.vstack([np.round((stride * t_index[1] + 1) / scale),
+                      np.round((stride * t_index[0] + 1) / scale),
+                      np.round(
+        (stride * t_index[1] + 1 + cellsize) / scale),
+        np.round(
+        (stride * t_index[0] + 1 + cellsize) / scale),
+        score,
+        reg])
 
-    return boundingbox.T
+    return bbox.T
 
 
 # def generate_bboxes(scores_map, reg, scale, threshold):
@@ -147,9 +147,11 @@ def bbox_reg(bbox, reg):
     w = np.expand_dims(w, 1)
     h = bbox[:, 3] - bbox[:, 1] + 1
     h = np.expand_dims(h, 1)
+
     reg_m = np.hstack([w, h, w, h])
     aug = reg_m * reg
     bbox[:, 0:4] = bbox[:, 0:4] + aug
+
     return bbox
 
 
@@ -228,10 +230,12 @@ def convert_to_square(bbox):
     h = bbox[:, 3] - bbox[:, 1] + 1
     w = bbox[:, 2] - bbox[:, 0] + 1
     max_side = np.maximum(h, w)
+
     square_bbox[:, 0] = bbox[:, 0] + w * 0.5 - max_side * 0.5
     square_bbox[:, 1] = bbox[:, 1] + h * 0.5 - max_side * 0.5
     square_bbox[:, 2] = square_bbox[:, 0] + max_side - 1
     square_bbox[:, 3] = square_bbox[:, 1] + max_side - 1
+
     return square_bbox
 
 
@@ -555,9 +559,9 @@ class MtcnnDetector(object):
         total_boxes = total_boxes.T
         total_boxes = convert_to_square(total_boxes)
         total_boxes[:, 0:4] = np.round(total_boxes[:, 0:4])
-#        t2 = time.clock()
-# print("First stage cost %f seconds, using %d processes, processed %d
-# pyramid scales" % ((t2-t1), self.num_worker, len(scales)) )
+        #        t2 = time.clock()
+        # print("First stage cost %f seconds, using %d processes, processed %d
+        # pyramid scales" % ((t2-t1), self.num_worker, len(scales)) )
 
         #############################################
         # second stage
@@ -579,6 +583,10 @@ class MtcnnDetector(object):
             input_buf[i, :, :, :] = adjust_input(cv2.resize(tmp, (24, 24)))
 
         output = self.RNet.predict(input_buf)
+        # print("RNet output.len: ", len(output))
+        # for i, it in enumerate(output):
+        #     print("output[{}].shape: {}\n".format(i, it.shape))
+        # print("RNet output: \n", output)
 
         # filter the total_boxes with threshold
         passed = np.where(output[1][:, 1] > threshold[1])
@@ -620,6 +628,10 @@ class MtcnnDetector(object):
             input_buf[i, :, :, :] = adjust_input(cv2.resize(tmp, (48, 48)))
 
         output = self.ONet.predict(input_buf)
+        # print("ONet output.len: ", len(output))
+        # for i, it in enumerate(output):
+        #     print("output[{}].shape: {}\n".format(i, it.shape))
+        # print("ONet output: \n", output)
 
         # filter the total_boxes with threshold
         passed = np.where(output[2][:, 1] > threshold[2])
@@ -646,14 +658,14 @@ class MtcnnDetector(object):
         total_boxes = total_boxes[pick]
         points = points[pick]
 
-#        t2 = time.clock()
-# print("Third stage cost %f seconds, using %d processes, processed %d
-# boxes" % ((t2-t1), 1, num_box) )
+        #        t2 = time.clock()
+        # print("Third stage cost %f seconds, using %d processes, processed %d
+        # boxes" % ((t2-t1), 1, num_box) )
 
         if not self.accurate_landmark:
             # print('Skip extended stage, because
             # detector.accurate_landmark=False')
-            return total_boxes, points
+            return total_boxes.tolist(), points.tolist()
 
         #############################################
         # extended stage
@@ -682,6 +694,10 @@ class MtcnnDetector(object):
                           :] = adjust_input(cv2.resize(tmpim, (24, 24)))
 
         output = self.LNet.predict(input_buf)
+        # print("LNet output.len: ", len(output))
+        # for i, it in enumerate(output):
+        #     print("output[{}].shape: {}\n".format(i, it.shape))
+        # print("LNet output: \n", output)
 
         pointx = np.zeros((num_box, 5))
         pointy = np.zeros((num_box, 5))
@@ -869,7 +885,7 @@ if __name__ == "__main__":
     save_dir = './fd_rlt'
     img_path = "../test_imgs/girls.jpg"
 
-    caffe_model_path = "../model"
+    model_path = "../model"
     gpu_id = 0
 
     minsize = 20
@@ -883,7 +899,7 @@ if __name__ == "__main__":
     img = cv2.imread(img_path)
 
     t1 = time.clock()
-    detector = MtcnnDetector(caffe_model_path, gpu_id,
+    detector = MtcnnDetector(model_path, gpu_id,
                              minsize, threshold, scale_factor,
                              num_worker, True)
     t2 = time.clock()
