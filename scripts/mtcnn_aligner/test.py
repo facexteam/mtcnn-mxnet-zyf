@@ -33,7 +33,7 @@ def main(img_path, face_rects, save_dir=None, save_img=True, show_img=True):
 
     img = cv2.imread(img_path)
 
-    aligner = MtcnnAligner(model_path, False)
+    aligner = MtcnnAligner(model_path, False, gpu_id = -1)
 
     rlt = {}
     rlt["filename"] = img_path

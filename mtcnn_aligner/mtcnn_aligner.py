@@ -406,7 +406,7 @@ class MtcnnAligner(object):
             total_boxes = total_boxes.reshape((-1, 4))
 
         total_boxes = np.hstack(
-            (total_boxes[:, 0:4], np.ones((1, total_boxes.shape[1]))))
+            (total_boxes[:, 0:4], np.ones((total_boxes.shape[0], 1))))
 
         #############################################
         # second stage
